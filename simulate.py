@@ -1,5 +1,5 @@
 from mancala_aima import MancalaAIMA
-from collections import namedtuple
+import argparse
 
 
 class Player():
@@ -75,12 +75,22 @@ class RandomPlayer(Player):
         return state
 
 
+PLAYER_TYPES = {
+    "random": RandomPlayer,
+}
+
+
 def main():
-    p1 = RandomPlayer()
-    p2 = RandomPlayer()
+    parser = argparse.ArgumentParser(description="Simulate Mancala games")
+    parser.add_argument("-n", "--num-games", type=int, default=100, help="number of games to simulate (default: 100)")
+    parser.add_argument("--p1", choices=PLAYER_TYPES.keys(), default="random", help="player 1 type (default: random)")
+    parser.add_argument("--p2", choices=PLAYER_TYPES.keys(), default="random", help="player 2 type (default: random)")
+    args = parser.parse_args()
 
-    simulation = Simulator(p1, p2, 100)
+    p1 = PLAYER_TYPES[args.p1]()
+    p2 = PLAYER_TYPES[args.p2]()
 
+    simulation = Simulator(p1, p2, args.num_games)
     simulation.simulate()
 
 

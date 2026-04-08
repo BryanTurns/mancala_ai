@@ -8,7 +8,6 @@ class Player():
 
 
 class Simulator():
-
     def __init__(self, p1: Player, p2: Player, simulation_count: int, num_pits: int = 6, stones_per_pit: int =4):
         self.p1 = p1
         self.p2 = p2
@@ -17,7 +16,7 @@ class Simulator():
 
     def simulate(self):
         for i in range(self.simulation_count):
-            if i % 10 == 0 and i != 0: 
+            if i % 50 == 0 and i != 0: 
                 self.display_current_simulation_stats()
 
             game = MancalaAIMA()
@@ -42,6 +41,7 @@ class Simulator():
         print(f"  Avg turns per game : {self.simulation_stats["avg_turns"]:.1f}")
         print(f"         Win%   Loss%   Tie%")
         print(f"  P1:   {self.simulation_stats["p1_wins"]/self.simulation_stats["num_games"]*100:5.1f}%  {self.simulation_stats["p2_wins"]/self.simulation_stats["num_games"]*100:5.1f}%  {self.simulation_stats["ties"]/self.simulation_stats["num_games"]*100:5.1f}%")
+        print()
 
 
     # Take a game object and play it out with the players the simulation was defined by

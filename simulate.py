@@ -1,5 +1,6 @@
 from mancala_aima import MancalaAIMA
 import argparse
+import time
 
 
 class Player():
@@ -15,8 +16,10 @@ class Simulator():
         self.simulation_stats = {"p1_wins": 0, "p2_wins": 0, "ties": 0, "avg_turns": 0, "num_games": 0}
 
     def simulate(self):
+        start_time = time.time()
+
         for i in range(self.simulation_count):
-            if i % 50 == 0 and i != 0: 
+            if i % 50 == 0 and i != 0:
                 self.display_current_simulation_stats()
 
             game = MancalaAIMA()
@@ -34,7 +37,9 @@ class Simulator():
 
             self.simulation_stats["num_games"] += 1
 
+        elapsed = time.time() - start_time
         self.display_current_simulation_stats()
+        print(f"Simulation completed in {elapsed:.3f}s")
 
     def display_current_simulation_stats(self):
         print(f"Results over {self.simulation_stats["num_games"]} games:")

@@ -1,6 +1,28 @@
 from mancala_aima import MancalaAIMA
+from games import alpha_beta_cutoff_search
 import argparse
 import time
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Simulate Mancala games")
+    parser.add_argument("-n", "--num-games", type=int, default=100, help="number of games to simulate (default: 100)")
+    parser.add_argument("--p1", choices=PLAYER_TYPES.keys(), default="random", help="player 1 type (default: random)")
+    parser.add_argument("--p2", choices=PLAYER_TYPES.keys(), default="random", help="player 2 type (default: random)")
+    parser.add_argument("--p1-depth", type=int, default=4, help="search depth for player 1 (default: 4)")
+    parser.add_argument("--p2-depth", type=int, default=4, help="search depth for player 2 (default: 4)")
+    args = parser.parse_args()
+
+    if args.p1 not in DEPTH_PLAYERS and args.p1_depth != 4:
+        parser.error(f"--p1-depth is not applicable for player type '{args.p1}'")
+    if args.p2 not in DEPTH_PLAYERS and args.p2_depth != 4:
+        parser.error(f"--p2-depth is not applicable for player type '{args.p2}'")
+
+    p1 = make_player(args.p1, args.p1_depth)
+    p2 = make_player(args.p2, args.p2_depth)
+
+    simulation = Simulator(p1, p2, args.num_games)
+    simulation.simulate()
 
 
 class Player():
@@ -80,24 +102,28 @@ class RandomPlayer(Player):
         return state
 
 
+class AlphaBetaPlayer(Player):
+    def __init__(self, depth=4):
+        self.depth = depth
+
+    def move(self, game, state):
+        best_move = alpha_beta_cutoff_search(state, game, d=self.depth)
+        return game.result(state, best_move)
+
+
 PLAYER_TYPES = {
     "random": RandomPlayer,
+    "alphabeta": AlphaBetaPlayer,
 }
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Simulate Mancala games")
-    parser.add_argument("-n", "--num-games", type=int, default=100, help="number of games to simulate (default: 100)")
-    parser.add_argument("--p1", choices=PLAYER_TYPES.keys(), default="random", help="player 1 type (default: random)")
-    parser.add_argument("--p2", choices=PLAYER_TYPES.keys(), default="random", help="player 2 type (default: random)")
-    args = parser.parse_args()
+DEPTH_PLAYERS = {"alphabeta"}
 
-    p1 = PLAYER_TYPES[args.p1]()
-    p2 = PLAYER_TYPES[args.p2]()
 
-    simulation = Simulator(p1, p2, args.num_games)
-    simulation.simulate()
-
+def make_player(player_type, depth):
+    if player_type in DEPTH_PLAYERS:
+        return PLAYER_TYPES[player_type](depth=depth)
+    return PLAYER_TYPES[player_type]()
 
 
 if __name__ == "__main__":

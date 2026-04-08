@@ -107,7 +107,9 @@ class AlphaBetaPlayer(Player):
         self.depth = depth
 
     def move(self, game, state):
-        best_move = alpha_beta_cutoff_search(state, game, d=self.depth)
+        player = state.to_move
+        eval_fn = lambda s: game._compute_utility(s.board) if player == 1 else -game._compute_utility(s.board)
+        best_move = alpha_beta_cutoff_search(state, game, d=self.depth, eval_fn=eval_fn)
         return game.result(state, best_move)
 
 

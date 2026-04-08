@@ -1,5 +1,6 @@
 from mancala_aima import MancalaAIMA
 from games import alpha_beta_cutoff_search
+import numpy as np
 import argparse
 import time
 
@@ -67,7 +68,7 @@ class Simulator():
         print(f"Results over {self.simulation_stats["num_games"]} games:")
         print(f"  Avg turns per game : {self.simulation_stats["avg_turns"]:.1f}")
         print(f"         Win%   Loss%   Tie%")
-        print(f"  P1:   {self.simulation_stats["p1_wins"]/self.simulation_stats["num_games"]*100:5.1f}%  {self.simulation_stats["p2_wins"]/self.simulation_stats["num_games"]*100:5.1f}%  {self.simulation_stats["ties"]/self.simulation_stats["num_games"]*100:5.1f}%")
+        print(f"  P1:   {self.simulation_stats["p1_wins"]/self.simulation_stats["num_games"]*100:5.2f}%  {self.simulation_stats["p2_wins"]/self.simulation_stats["num_games"]*100:5.2f}%  {self.simulation_stats["ties"]/self.simulation_stats["num_games"]*100:5.2f}%")
         print()
 
 
@@ -113,13 +114,72 @@ class AlphaBetaPlayer(Player):
         return game.result(state, best_move)
 
 
+def minmax_cutoff_search(state, game, d=4, cutoff_test=None, eval_fn=None):
+    player = game.to_move(state)
+    cutoff_test = cutoff_test or (lambda state, depth: depth > d or game.terminal_test(state))
+    eval_fn = eval_fn or (lambda state: game.utility(state, player))
+
+    def max_value(state, depth):
+        if cutoff_test(state, depth):
+            return eval_fn(state)
+        v = -np.inf
+        for a in game.actions(state):
+            v = max(v, min_value(game.result(state, a), depth + 1))
+        return v
+
+    def min_value(state, depth):
+        if cutoff_test(state, depth):
+            return eval_fn(state)
+        v = np.inf
+        for a in game.actions(state):
+            v = min(v, max_value(game.result(state, a), depth + 1))
+        return v
+
+    best_score = -np.inf
+    best_action = None
+    for a in game.actions(state):
+        v = min_value(game.result(state, a), 1)
+        if v > best_score:
+            best_score = v
+            best_action = a
+    return best_action
+
+
+class HumanPlayer(Player):
+    def move(self, game, state):
+        game.display(state)
+        valid_moves = game.actions(state)
+        print(f"Valid moves: {valid_moves}")
+        while True:
+            try:
+                choice = int(input("Your move: "))
+                if choice in valid_moves:
+                    return game.result(state, choice)
+                print(f"Invalid move. Choose from {valid_moves}")
+            except ValueError:
+                print(f"Enter a number. Choose from {valid_moves}")
+
+
+class MinimaxPlayer(Player):
+    def __init__(self, depth=4):
+        self.depth = depth
+
+    def move(self, game, state):
+        player = state.to_move
+        eval_fn = lambda s: game._compute_utility(s.board) if player == 1 else -game._compute_utility(s.board)
+        best_move = minmax_cutoff_search(state, game, d=self.depth, eval_fn=eval_fn)
+        return game.result(state, best_move)
+
+
 PLAYER_TYPES = {
     "random": RandomPlayer,
     "alphabeta": AlphaBetaPlayer,
+    "minimax": MinimaxPlayer,
+    "human": HumanPlayer,
 }
 
 
-DEPTH_PLAYERS = {"alphabeta"}
+DEPTH_PLAYERS = {"alphabeta", "minimax"}
 
 
 def make_player(player_type, depth):

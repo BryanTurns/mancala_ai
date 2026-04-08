@@ -40,7 +40,7 @@ class MancalaAIMA(Game):
         return p1_empty or p2_empty
 
     def _compute_utility(self, board):
-        return board[self.p1_mancala_index] - board[self.p2_mancala_index]
+        return (board[self.p1_mancala_index] - board[self.p2_mancala_index])**2
 
     def actions(self, state):
         return state.moves

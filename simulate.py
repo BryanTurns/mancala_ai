@@ -2,6 +2,8 @@ from mancala_aima import MancalaAIMA
 from games import alpha_beta_cutoff_search
 import numpy as np
 import argparse
+import json
+import os
 import time
 
 
@@ -32,7 +34,7 @@ class Player():
 
 
 class Simulator():
-    def __init__(self, p1: Player, p2: Player, simulation_count: int, num_pits: int = 6, stones_per_pit: int =4):
+    def __init__(self, p1: Player, p2: Player, simulation_count: int, num_pits: int = 6, stones_per_pit: int = 4):
         self.p1 = p1
         self.p2 = p2
         self.simulation_count = simulation_count
@@ -64,10 +66,12 @@ class Simulator():
             print("\nInterrupted!")
 
         elapsed = time.time() - start_time
+        interrupted = self.simulation_stats["num_games"] < self.simulation_count
         if self.simulation_stats["num_games"] > 0:
             self.display_current_simulation_stats()
             print(f"Simulation completed in {elapsed:.3f}s")
             print(f"Average time per game: {elapsed / self.simulation_stats['num_games']:.3f}s")
+            self.save_results(elapsed, interrupted)
 
     def display_current_simulation_stats(self):
         print(f"Results over {self.simulation_stats["num_games"]} games:")
@@ -76,6 +80,45 @@ class Simulator():
         print(f"  P1:   {self.simulation_stats["p1_wins"]/self.simulation_stats["num_games"]*100:5.2f}%  {self.simulation_stats["p2_wins"]/self.simulation_stats["num_games"]*100:5.2f}%  {self.simulation_stats["ties"]/self.simulation_stats["num_games"]*100:5.2f}%")
         print()
 
+
+    def _player_label(self, player):
+        name = PLAYER_TYPE_NAMES[type(player)]
+        depth = getattr(player, "depth", None)
+        return f"{name}_d{depth}" if depth is not None else name
+
+    def save_results(self, elapsed, interrupted):
+        num_games = self.simulation_stats["num_games"]
+        p1_label = self._player_label(self.p1)
+        p2_label = self._player_label(self.p2)
+        p1_name = PLAYER_TYPE_NAMES[type(self.p1)]
+        p2_name = PLAYER_TYPE_NAMES[type(self.p2)]
+        filename = f"{p1_label}_vs_{p2_label}_n{num_games}.json"
+        if interrupted:
+            filename = f"incomplete_{filename}"
+
+        results_dir = os.path.join(os.path.dirname(__file__), "results")
+        os.makedirs(results_dir, exist_ok=True)
+
+        data = {
+            "config": {
+                "num_games": num_games,
+                "p1_type": p1_name,
+                "p2_type": p2_name,
+                "p1_depth": getattr(self.p1, "depth", None),
+                "p2_depth": getattr(self.p2, "depth", None),
+            },
+            "results": {
+                "avg_time_per_game": elapsed / num_games,
+                "avg_turns_per_game": self.simulation_stats["avg_turns"],
+                "p1_winrate": self.simulation_stats["p1_wins"] / num_games,
+                "p1_tie_rate": self.simulation_stats["ties"] / num_games,
+            },
+        }
+
+        filepath = os.path.join(results_dir, filename)
+        with open(filepath, "w") as f:
+            json.dump(data, f, indent=2)
+        print(f"Results saved to {filepath}")
 
     # Take a game object and play it out with the players the simulation was defined by
     # Return 1 if player 1 wins, 2 if player 2 wins, and 0 for a tie
@@ -183,6 +226,8 @@ PLAYER_TYPES = {
     "human": HumanPlayer,
 }
 
+
+PLAYER_TYPE_NAMES = {v: k for k, v in PLAYER_TYPES.items()}
 
 DEPTH_PLAYERS = {"alphabeta", "minimax"}
 

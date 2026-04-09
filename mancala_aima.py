@@ -40,7 +40,7 @@ class MancalaAIMA(Game):
         return p1_empty or p2_empty
 
     def _compute_utility(self, board):
-        return (board[self.p1_mancala_index] - board[self.p2_mancala_index])**2
+        return (board[self.p1_mancala_index] - board[self.p2_mancala_index])
 
     def actions(self, state):
         return state.moves
@@ -64,6 +64,7 @@ class MancalaAIMA(Game):
             own_mancala = self.p2_mancala_index
 
         num_stones = board[start_index]
+        board[start_index] = 0
         stones_used = 0
         index = start_index
         board_len = len(board)
@@ -77,8 +78,6 @@ class MancalaAIMA(Game):
             board[index] += 1
             stones_used += 1
 
-        board[start_index] = 0
-
         if own_pits_start <= index <= own_pits_end and board[index] == 1:
             opposite = self.p1_pits_index[1] + self.p2_pits_index[0] - index
             board[own_mancala] += board[index] + board[opposite]
@@ -89,6 +88,14 @@ class MancalaAIMA(Game):
         new_board = tuple(board)
 
         if self._is_terminal(new_board):
+            board = list(new_board)
+            for i in range(self.p1_pits_index[0], self.p1_pits_index[1] + 1):
+                board[self.p1_mancala_index] += board[i]
+                board[i] = 0
+            for i in range(self.p2_pits_index[0], self.p2_pits_index[1] + 1):
+                board[self.p2_mancala_index] += board[i]
+                board[i] = 0
+            new_board = tuple(board)
             util = self._compute_utility(new_board)
             new_moves = []
         else:

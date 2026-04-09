@@ -41,28 +41,33 @@ class Simulator():
     def simulate(self):
         start_time = time.time()
 
-        for i in range(self.simulation_count):
-            if i % 50 == 0 and i != 0:
-                self.display_current_simulation_stats()
+        try:
+            for i in range(self.simulation_count):
+                if i % 50 == 0 and i != 0:
+                    self.display_current_simulation_stats()
 
-            game = MancalaAIMA()
-            winner, turn_count = self.play_game(game)
+                game = MancalaAIMA()
+                winner, turn_count = self.play_game(game)
 
-            self.simulation_stats["avg_turns"] = (self.simulation_stats["num_games"] * self.simulation_stats["avg_turns"] + turn_count) / (self.simulation_stats["num_games"] + 1)
-            if winner == 0:
-                self.simulation_stats["ties"] += 1
-            elif winner == 1:
-                self.simulation_stats["p1_wins"] += 1
-            elif winner == 2:
-                self.simulation_stats["p2_wins"] += 1
-            else:
-                raise ValueError(f"play_game returned invalid winner value {winner}")
+                self.simulation_stats["avg_turns"] = (self.simulation_stats["num_games"] * self.simulation_stats["avg_turns"] + turn_count) / (self.simulation_stats["num_games"] + 1)
+                if winner == 0:
+                    self.simulation_stats["ties"] += 1
+                elif winner == 1:
+                    self.simulation_stats["p1_wins"] += 1
+                elif winner == 2:
+                    self.simulation_stats["p2_wins"] += 1
+                else:
+                    raise ValueError(f"play_game returned invalid winner value {winner}")
 
-            self.simulation_stats["num_games"] += 1
+                self.simulation_stats["num_games"] += 1
+        except KeyboardInterrupt:
+            print("\nInterrupted!")
 
         elapsed = time.time() - start_time
-        self.display_current_simulation_stats()
-        print(f"Simulation completed in {elapsed:.3f}s")
+        if self.simulation_stats["num_games"] > 0:
+            self.display_current_simulation_stats()
+            print(f"Simulation completed in {elapsed:.3f}s")
+            print(f"Average time per game: {elapsed / self.simulation_stats['num_games']:.3f}s")
 
     def display_current_simulation_stats(self):
         print(f"Results over {self.simulation_stats["num_games"]} games:")

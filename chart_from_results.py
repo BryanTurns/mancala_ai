@@ -2,6 +2,7 @@ import json
 import os
 import glob
 import argparse
+import fnmatch
 import matplotlib.pyplot as plt
 from constants import DEPTH_PLAYER_NAMES
 
@@ -160,12 +161,17 @@ def main():
     parser.add_argument("--include-incomplete", action="store_true", help="include incomplete simulation runs")
     parser.add_argument("--log-time", action="store_true", help="use logarithmic scale for the timing chart y-axis")
     parser.add_argument("--max-depth", type=int, default=None, help="maximum depth to display in charts")
+    parser.add_argument("--players", type=str, default=None, help="comma-separated list of player types to include (filters on p1_type)")
     args = parser.parse_args()
 
     results = load_results(include_incomplete=args.include_incomplete)
     if not results:
         print(f"No result files found in {RESULTS_DIR}")
         return
+    if args.players is not None:
+        patterns = [p.strip() for p in args.players.split(",")]
+        results = [r for r in results if
+                   any(fnmatch.fnmatch(r["config"]["p1_type"], p) or fnmatch.fnmatch(r["config"]["p2_type"], p) for p in patterns)]
     if args.max_depth is not None:
         results = [r for r in results if r["config"]["p1_depth"] is None or r["config"]["p1_depth"] <= args.max_depth]
     chart_winrate_vs_depth(results, show_baseline=not args.no_baseline)

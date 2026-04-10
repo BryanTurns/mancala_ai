@@ -324,10 +324,131 @@ class AlphaBetaTTPlayer(Player):
         return game.result(state, best_move)
 
 
+def alpha_beta_cutoff_search_tt_mvorder(state, game, d=4, cutoff_test=None, eval_fn=None, tt=None):
+    """Alpha-beta search with transposition table and TT-based move ordering.
+    tt entries: (value, depth, flag, best_move)
+    where flag is 'exact', 'lower', or 'upper'."""
+
+    player = game.to_move(state)
+    cutoff_test = cutoff_test or (lambda state, depth: depth > d or game.terminal_test(state))
+    eval_fn = eval_fn or (lambda state: game.utility(state, player))
+
+    def _order_moves(actions, tt_best_move):
+        if tt_best_move is not None and tt_best_move in actions:
+            ordered = [tt_best_move] + [a for a in actions if a != tt_best_move]
+            return ordered
+        return actions
+
+    def max_value(state, alpha, beta, depth):
+        remaining = d - depth
+        key = (state.board, state.to_move)
+        entry = tt.get(key)
+        tt_best_move = None
+        if entry is not None:
+            tt_val, tt_depth, tt_flag, tt_best_move = entry
+            if tt_depth >= remaining:
+                if tt_flag == 'exact':
+                    return tt_val
+                elif tt_flag == 'lower':
+                    alpha = max(alpha, tt_val)
+                elif tt_flag == 'upper':
+                    beta = min(beta, tt_val)
+                if alpha >= beta:
+                    return tt_val
+
+        if cutoff_test(state, depth):
+            val = eval_fn(state)
+            tt[key] = (val, remaining, 'exact', None)
+            return val
+
+        orig_alpha = alpha
+        v = -np.inf
+        best_a = None
+        for a in _order_moves(game.actions(state), tt_best_move):
+            child_val = min_value(game.result(state, a), alpha, beta, depth + 1)
+            if child_val > v:
+                v = child_val
+                best_a = a
+            if v >= beta:
+                tt[key] = (v, remaining, 'lower', best_a)
+                return v
+            alpha = max(alpha, v)
+
+        if v > orig_alpha:
+            tt[key] = (v, remaining, 'exact', best_a)
+        else:
+            tt[key] = (v, remaining, 'upper', best_a)
+        return v
+
+    def min_value(state, alpha, beta, depth):
+        remaining = d - depth
+        key = (state.board, state.to_move)
+        entry = tt.get(key)
+        tt_best_move = None
+        if entry is not None:
+            tt_val, tt_depth, tt_flag, tt_best_move = entry
+            if tt_depth >= remaining:
+                if tt_flag == 'exact':
+                    return tt_val
+                elif tt_flag == 'lower':
+                    alpha = max(alpha, tt_val)
+                elif tt_flag == 'upper':
+                    beta = min(beta, tt_val)
+                if alpha >= beta:
+                    return tt_val
+
+        if cutoff_test(state, depth):
+            val = eval_fn(state)
+            tt[key] = (val, remaining, 'exact', None)
+            return val
+
+        orig_beta = beta
+        v = np.inf
+        best_a = None
+        for a in _order_moves(game.actions(state), tt_best_move):
+            child_val = max_value(game.result(state, a), alpha, beta, depth + 1)
+            if child_val < v:
+                v = child_val
+                best_a = a
+            if v <= alpha:
+                tt[key] = (v, remaining, 'upper', best_a)
+                return v
+            beta = min(beta, v)
+
+        if v < orig_beta:
+            tt[key] = (v, remaining, 'exact', best_a)
+        else:
+            tt[key] = (v, remaining, 'lower', best_a)
+        return v
+
+    best_score = -np.inf
+    beta = np.inf
+    best_action = None
+    for a in game.actions(state):
+        v = min_value(game.result(state, a), best_score, beta, 1)
+        if v > best_score:
+            best_score = v
+            best_action = a
+    return best_action
+
+
+class AlphaBetaTTMvOrderPlayer(Player):
+    def __init__(self, depth=4):
+        self.depth = depth
+        self.tt = {}
+
+    def move(self, game, state):
+        player = state.to_move
+        eval_fn = lambda s: game._compute_utility(s.board) if player == 1 else -game._compute_utility(s.board)
+        best_move = alpha_beta_cutoff_search_tt_mvorder(state, game, d=self.depth, eval_fn=eval_fn, tt=self.tt)
+        return game.result(state, best_move)
+
+
 PLAYER_TYPES = {
     "random": RandomPlayer,
     "alphabeta": AlphaBetaPlayer,
     "alphabeta_tt": AlphaBetaTTPlayer,
+    "alphabeta_tt_mvorder": AlphaBetaTTMvOrderPlayer,
     "minimax": MinimaxPlayer,
     "human": HumanPlayer,
 }

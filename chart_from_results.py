@@ -3,6 +3,7 @@ import os
 import glob
 import argparse
 import matplotlib.pyplot as plt
+from constants import DEPTH_PLAYER_NAMES
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
 
@@ -75,7 +76,7 @@ def chart_timing_comparison(results, log_scale=False):
     for r in results:
         p1_type = r["config"]["p1_type"]
         p1_depth = r["config"]["p1_depth"]
-        if p1_depth is None or p1_type not in ("minimax", "alphabeta"):
+        if p1_depth is None or p1_type not in DEPTH_PLAYER_NAMES:
             continue
         p2_type = r["config"]["p2_type"]
         label = f"{p1_type} vs {p2_type}"
@@ -98,7 +99,7 @@ def chart_timing_comparison(results, log_scale=False):
 
     ax.set_xlabel("Depth (plies)")
     ax.set_ylabel("Avg Time per Game (s)")
-    ax.set_title("Minimax vs Alpha-Beta Timing")
+    ax.set_title("Search Algorithm Timing Comparison")
     ax.legend()
     ax.grid(True)
 
@@ -158,12 +159,15 @@ def main():
     parser.add_argument("--no-baseline", action="store_true", help="omit the random vs random baseline from the win rate chart")
     parser.add_argument("--include-incomplete", action="store_true", help="include incomplete simulation runs")
     parser.add_argument("--log-time", action="store_true", help="use logarithmic scale for the timing chart y-axis")
+    parser.add_argument("--max-depth", type=int, default=None, help="maximum depth to display in charts")
     args = parser.parse_args()
 
     results = load_results(include_incomplete=args.include_incomplete)
     if not results:
         print(f"No result files found in {RESULTS_DIR}")
         return
+    if args.max_depth is not None:
+        results = [r for r in results if r["config"]["p1_depth"] is None or r["config"]["p1_depth"] <= args.max_depth]
     chart_winrate_vs_depth(results, show_baseline=not args.no_baseline)
     chart_timing_comparison(results, log_scale=args.log_time)
     chart_turns_vs_depth(results)

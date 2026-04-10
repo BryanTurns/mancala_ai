@@ -1,5 +1,6 @@
 from mancala_aima import MancalaAIMA
 from games import alpha_beta_cutoff_search
+from constants import DEPTH_PLAYER_NAMES
 import numpy as np
 import argparse
 import json
@@ -219,9 +220,114 @@ class MinimaxPlayer(Player):
         return game.result(state, best_move)
 
 
+def alpha_beta_cutoff_search_tt(state, game, d=4, cutoff_test=None, eval_fn=None, tt=None):
+    """Alpha-beta search with a transposition table.
+    tt is a dict mapping (board, to_move) -> (value, depth, flag)
+    where flag is 'exact', 'lower', or 'upper'."""
+
+    player = game.to_move(state)
+    cutoff_test = cutoff_test or (lambda state, depth: depth > d or game.terminal_test(state))
+    eval_fn = eval_fn or (lambda state: game.utility(state, player))
+
+    def max_value(state, alpha, beta, depth):
+        remaining = d - depth
+        key = (state.board, state.to_move)
+        entry = tt.get(key)
+        if entry is not None:
+            tt_val, tt_depth, tt_flag = entry
+            if tt_depth >= remaining:
+                if tt_flag == 'exact':
+                    return tt_val
+                elif tt_flag == 'lower':
+                    alpha = max(alpha, tt_val)
+                elif tt_flag == 'upper':
+                    beta = min(beta, tt_val)
+                if alpha >= beta:
+                    return tt_val
+
+        if cutoff_test(state, depth):
+            val = eval_fn(state)
+            tt[key] = (val, remaining, 'exact')
+            return val
+
+        orig_alpha = alpha
+        v = -np.inf
+        for a in game.actions(state):
+            v = max(v, min_value(game.result(state, a), alpha, beta, depth + 1))
+            if v >= beta:
+                tt[key] = (v, remaining, 'lower')
+                return v
+            alpha = max(alpha, v)
+
+        if v > orig_alpha:
+            tt[key] = (v, remaining, 'exact')
+        else:
+            tt[key] = (v, remaining, 'upper')
+        return v
+
+    def min_value(state, alpha, beta, depth):
+        remaining = d - depth
+        key = (state.board, state.to_move)
+        entry = tt.get(key)
+        if entry is not None:
+            tt_val, tt_depth, tt_flag = entry
+            if tt_depth >= remaining:
+                if tt_flag == 'exact':
+                    return tt_val
+                elif tt_flag == 'lower':
+                    alpha = max(alpha, tt_val)
+                elif tt_flag == 'upper':
+                    beta = min(beta, tt_val)
+                if alpha >= beta:
+                    return tt_val
+
+        if cutoff_test(state, depth):
+            val = eval_fn(state)
+            tt[key] = (val, remaining, 'exact')
+            return val
+
+        orig_beta = beta
+        v = np.inf
+        for a in game.actions(state):
+            v = min(v, max_value(game.result(state, a), alpha, beta, depth + 1))
+            if v <= alpha:
+                tt[key] = (v, remaining, 'upper')
+                return v
+            beta = min(beta, v)
+
+        if v < orig_beta:
+            tt[key] = (v, remaining, 'exact')
+        else:
+            tt[key] = (v, remaining, 'lower')
+        return v
+
+    best_score = -np.inf
+    beta = np.inf
+    best_action = None
+    for a in game.actions(state):
+        v = min_value(game.result(state, a), best_score, beta, 1)
+        if v > best_score:
+            best_score = v
+            best_action = a
+    return best_action
+
+
+class AlphaBetaTTPlayer(Player):
+    def __init__(self, depth=4):
+        self.depth = depth
+        self.tt = {}
+
+    def move(self, game, state):
+        player = state.to_move
+        eval_fn = lambda s: game._compute_utility(s.board) if player == 1 else -game._compute_utility(s.board)
+        best_move = alpha_beta_cutoff_search_tt(state, game, d=self.depth, eval_fn=eval_fn, tt=self.tt)
+        return game.result(state, best_move)
+
+
 PLAYER_TYPES = {
     "random": RandomPlayer,
     "alphabeta": AlphaBetaPlayer,
+    "alphabeta_tt": AlphaBetaTTPlayer,
     "minimax": MinimaxPlayer,
     "human": HumanPlayer,
 }
@@ -229,7 +335,7 @@ PLAYER_TYPES = {
 
 PLAYER_TYPE_NAMES = {v: k for k, v in PLAYER_TYPES.items()}
 
-DEPTH_PLAYERS = {"alphabeta", "minimax"}
+DEPTH_PLAYERS = DEPTH_PLAYER_NAMES
 
 
 def make_player(player_type, depth):

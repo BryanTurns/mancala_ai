@@ -1,5 +1,6 @@
 from mancala_aima import MancalaAIMA
 from players import Player, PLAYER_TYPES, PLAYER_TYPE_NAMES, DEPTH_PLAYERS, make_player
+from constants import UTILITY_FUNCTIONS
 import argparse
 import json
 import os
@@ -13,6 +14,10 @@ def main():
     parser.add_argument("--p2", choices=PLAYER_TYPES.keys(), default="random", help="player 2 type (default: random)")
     parser.add_argument("--p1-depth", type=int, default=4, help="search depth for player 1 (default: 4)")
     parser.add_argument("--p2-depth", type=int, default=4, help="search depth for player 2 (default: 4)")
+    parser.add_argument("--p1-utility", choices=UTILITY_FUNCTIONS.keys(), default="score_diff",
+                        help="utility function for player 1 (default: score_diff)")
+    parser.add_argument("--p2-utility", choices=UTILITY_FUNCTIONS.keys(), default="score_diff",
+                        help="utility function for player 2 (default: score_diff)")
     args = parser.parse_args()
 
     if args.p1 not in DEPTH_PLAYERS and args.p1_depth != 4:
@@ -20,8 +25,11 @@ def main():
     if args.p2 not in DEPTH_PLAYERS and args.p2_depth != 4:
         parser.error(f"--p2-depth is not applicable for player type '{args.p2}'")
 
-    p1 = make_player(args.p1, args.p1_depth)
-    p2 = make_player(args.p2, args.p2_depth)
+    p1_utility = UTILITY_FUNCTIONS[args.p1_utility]
+    p2_utility = UTILITY_FUNCTIONS[args.p2_utility]
+
+    p1 = make_player(args.p1, args.p1_depth, utility_fn=p1_utility)
+    p2 = make_player(args.p2, args.p2_depth, utility_fn=p2_utility)
 
     simulation = Simulator(p1, p2, args.num_games)
     simulation.simulate()
@@ -78,7 +86,12 @@ class Simulator():
     def _player_label(self, player):
         name = PLAYER_TYPE_NAMES[type(player)]
         depth = getattr(player, "depth", None)
-        return f"{name}_d{depth}" if depth is not None else name
+        utility_fn = getattr(player, "utility_fn", None)
+        label = f"{name}_d{depth}" if depth is not None else name
+        if utility_fn is not None and utility_fn.__name__ != "utility_score_diff":
+            util_name = utility_fn.__name__.removeprefix("utility_")
+            label += f"_{util_name}"
+        return label
 
     def save_results(self, elapsed, interrupted):
         num_games = self.simulation_stats["num_games"]
@@ -93,6 +106,9 @@ class Simulator():
         results_dir = os.path.join(os.path.dirname(__file__), "results")
         os.makedirs(results_dir, exist_ok=True)
 
+        p1_util = getattr(self.p1, "utility_fn", None)
+        p2_util = getattr(self.p2, "utility_fn", None)
+
         data = {
             "config": {
                 "num_games": num_games,
@@ -100,6 +116,8 @@ class Simulator():
                 "p2_type": p2_name,
                 "p1_depth": getattr(self.p1, "depth", None),
                 "p2_depth": getattr(self.p2, "depth", None),
+                "p1_utility": p1_util.__name__ if p1_util else None,
+                "p2_utility": p2_util.__name__ if p2_util else None,
             },
             "results": {
                 "avg_time_per_game": elapsed / num_games,

@@ -1,4 +1,9 @@
 # Report
+## Oppurtunities for optimization
+- For alphabeta - order moves that are likely to be good to come first to encourage pruning (capture rule)
+- Cache results for a given game state across games. This would make the first few moves instant
+- Convert everything to numpy/JIT
+- Convert everything to C
 
 ## Play 100 games of random player against random player
 - What percentage of games does each player (1st or 2nd) win?
@@ -23,7 +28,7 @@
 - Write a paragraph or two describing why or why not
 ## Play 100 games with the random player against the Alpha-Beta AI player at a depth of 10 plies
 NOTE: It may take between 10 minutes and 2 hours to run 100 games at 10 plies depending on how you have coded your project
-- How long does it take for a single game to run to completion?
+- How long does it take forgle game to run to completion?
 - What percentage of games does each player (AI or random) win?
 - On average, how many moves does it take to win?
 - How much does the Alpha Beta algorithm speed up the game. Compare your run time for 5 ply minimax against 5 ply Alpha Beta. Project how long

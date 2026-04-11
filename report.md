@@ -37,11 +37,40 @@ Yes, my AI player has a better win rate as the number of plies increases. This m
 
 ## Build an AI player that uses Alpha-Beta to choose the best move
 ## Play 100 games with the random player against the Alpha-Beta AI player at a depth of 5 plies.
+
 - How long does it take for a single game to run to completion?
+
+![alphabeta timing chart](./report_graphs/alphabeta_timing_comparison.png)
+
+At a depth of 5 each game takes 0.066 seconds against a random player at a depth of 5.
+
 - What percentage of games does each player (AI or random) win?
+
+![alphabeta win rate chart](./report_graphs/alphabeta_winrate_vs_depth.png)
+
+At a depth of 5 the win rate against a random player is 96.1%.
+
 - On average, how many moves does it take to win?
+
+![alphabeta turn chart](./report_graphs/alphabeta_turns_vs_depth.png)
+
+On average at a depth of 5 plies alphabeta vs random take 26.8 moves. 
+
 - Are your results for this part different from those for your minimax AI player?
-- Write a paragraph or two describing why or why not
+
+![alphabeta + minimax timing chart](./report_graphs/alphabeta-winrate_timing_comparison.png)
+
+![alphabeta + minimax log timing chart](./report_graphs/alpha-beta-log_timing_comparison.png)
+
+![alphabeta + minimax winrate chart](./report_graphs/alphabeta-winrate_turns_vs_depth.png)
+
+![alphabeta + minimax turn chart](./report_graphs/alphabeta-minimax_turns_vs_depth.png)
+
+Looking at both minimax and alphabeta side by side we can see the only major difference is in the amount of time it takes to complete a game. That difference is much clearer when we plot the log of the timing information. The gap in runtime appears to increase as plies increases. This is all expected.
+The reason why win rate and turn count are largely the same is that they are constructing the same game tree. Therefore, given the other player always plays the same moves, minimax and alphabeta should produce identical sets of moves to each other and thus have the same game length and win rate. 
+The reason why minimax takes longer, especially at higher plies, is minimax always explores the full game tree before deciding on a move. Alphabeta, however, does not consider branches of the tree that will result in non-optimal play. So this means routes where you or your oponent makes a bad move are not considered. That means it will reach a decision on the next move faster. I expect that the performance gap would continue to widden as successful prunes would mean greater and greater time savings. 
+
+
 ## Play 100 games with the random player against the Alpha-Beta AI player at a depth of 10 plies
 NOTE: It may take between 10 minutes and 2 hours to run 100 games at 10 plies depending on how you have coded your project
 - How long does it take forgle game to run to completion?

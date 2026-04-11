@@ -23,11 +23,13 @@ On average it takes 41 moves for the game to finish.
 ### What percentage of games does each player (AI or random) win?
 
 ![minimax win chart](./report_graphs/minimax_winrate_vs_depth.png)
+
 Win rate starts at 93% at 1 plie and increases up to 95.5% at 5 plies with the biggest jump in performance when going from 3 plies to 4. 
 
 ### On average, how many moves does it take to win?
 
 ![minimax turn chart](./report_graphs/minimax_turns_vs_depth.png)
+
 We can see that increasing depth seems to decrease game length.
 
 ### Is your AI player better than random chance? Write a paragraph or two describing or why not
@@ -75,11 +77,22 @@ The reason why minimax takes longer, especially at higher plies, is minimax alwa
 
 ## Play 100 games with the random player against the Alpha-Beta AI player at a depth of 10 plies
 NOTE: It may take between 10 minutes and 2 hours to run 100 games at 10 plies depending on how you have coded your project
-- How long does it take forgle game to run to completion?
-- What percentage of games does each player (AI or random) win?
-- On average, how many moves does it take to win?
-- How much does the Alpha Beta algorithm speed up the game. Compare your run time for 5 ply minimax against 5 ply Alpha Beta. Project how long
-- Minimax would take to run 10 plies.
+### How long does it take for a single game to run to completion?
+
+It takes an average of 5.23 seconds for each game running on my laptop with the power plugged in.
+
+### What percentage of games does each player (AI or random) win?
+
+On average at a depth of 10 plies it wins 98.9% of the time against random.
+
+### On average, how many moves does it take to win?
+
+On average at a depth of 10 plies it takes 25.1 turns to win. 
+
+### How much does the Alpha Beta algorithm speed up the game. Compare your run time for 5 ply minimax against 5 ply Alpha Beta. Project how long Minimax would take to run 10 plies.
+
+
+
 - Plot a curve showingthe win percentage for a player looking ahead 2 plies, 5 plies and 10 plies
 - As you increase the number of plies, does the AI player win more games? Explain why or why not.
 ## (Extra Credit, 20 points). Change the utility function and play 100 games with the random player against the Alpha-Beta AI player at a depth of 2 and 5 plies or more

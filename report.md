@@ -1,12 +1,27 @@
 # Report
-## Oppurtunities for optimization
-- For alphabeta - order moves that are likely to be good to come first to encourage pruning (capture rule)
-- Cache results for a given game state across games. This would make the first few moves instant
-- Convert everything to numpy/JIT
-- Convert everything to C
 
+## Usage
 
+### Install Dependencies
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
+### Run Simulation
+
+```bash
+python3 simulate.py --p1 alphabeta -n 100
+```
+
+### Run Charting
+
+```bash
+python3 chart_from_results.py --players alphabeta
+```
+
+simulate.py is the main logic.
 
 ## Play 100 games of random player against random player
 
@@ -99,11 +114,11 @@ Minimax d5: 0.440s
 This makes alphabeta 7.3x faster at a depth of 5 plies. The amount of time it takes for minimax to complete a game seems to 1.5x for each increase in depth. This means we should expect minimax to take 7.6x longer at a depth of 10 (1.5^10). That comes out to minimax at d10 taking 3.34s per run, but that clearly 
  can't be the case considering alphabeta at d10 takes 5.23 seconds per run. If we assume the performance gap at 5 plies persists at 10 plies, we would expect minimax at d10 to take around 38 seconds. 
 
-- Plot a curve showing the win percentage for a player looking ahead 2 plies, 5 plies and 10 plies
+### Plot a curve showing the win percentage for a player looking ahead 2 plies, 5 plies and 10 plies
 
 ![alphabeta win rate](./report_graphs/alphabeta_winrate_vs_depth.png)
 
-- As you increase the number of plies, does the AI player win more games? Explain why or why not.
+### As you increase the number of plies, does the AI player win more games? Explain why or why not.
 
 As you increase the number of plies, the AI player wins more game. This is expected because it corresponds to the number of turns the AI is looking ahead. Looking ahead more allows it to make more optimal moves.
 

@@ -11,8 +11,11 @@
 ## Play 100 games of random player against random player
 
 - What percentage of games does each player (1st or 2nd) win?
+
 On average player 1 wins 48% of the time while player 2 wins 45.57% of the time with 6.3% being ties.
+
 - On average, how many moves does it take to win?
+
 On average it takes 41 moves for the game to finish. 
 
 ## Build an AI player that uses minimax to choose the best move with a variable number of plies and a utility function we describe
@@ -38,13 +41,13 @@ Yes, my AI player has a better win rate as the number of plies increases. This m
 ## Build an AI player that uses Alpha-Beta to choose the best move
 ## Play 100 games with the random player against the Alpha-Beta AI player at a depth of 5 plies.
 
-- How long does it take for a single game to run to completion?
+### How long does it take for a single game to run to completion?
 
 ![alphabeta timing chart](./report_graphs/alphabeta_timing_comparison.png)
 
 At a depth of 5 each game takes 0.066 seconds against a random player at a depth of 5.
 
-- What percentage of games does each player (AI or random) win?
+### What percentage of games does each player (AI or random) win?
 
 ![alphabeta win rate chart](./report_graphs/alphabeta_winrate_vs_depth.png)
 

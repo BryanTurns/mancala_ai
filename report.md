@@ -10,35 +10,34 @@
 
 ## Play 100 games of random player against random player
 
-- What percentage of games does each player (1st or 2nd) win?
+### What percentage of games does each player (1st or 2nd) win?
 
 On average player 1 wins 48% of the time while player 2 wins 45.57% of the time with 6.3% being ties.
 
-- On average, how many moves does it take to win?
+### On average, how many moves does it take to win?
 
 On average it takes 41 moves for the game to finish. 
 
 ## Build an AI player that uses minimax to choose the best move with a variable number of plies and a utility function we describe
 
-- What percentage of games does each player (AI or random) win?
+### What percentage of games does each player (AI or random) win?
 
 ![minimax win chart](./report_graphs/minimax_winrate_vs_depth.png)
 Win rate starts at 93% at 1 plie and increases up to 95.5% at 5 plies with the biggest jump in performance when going from 3 plies to 4. 
 
-- On average, how many moves does it take to win?
+### On average, how many moves does it take to win?
 
 ![minimax turn chart](./report_graphs/minimax_turns_vs_depth.png)
 We can see that increasing depth seems to decrease game length.
 
-- Is your AI player better than random chance? Write a paragraph or two describing or why not
+### Is your AI player better than random chance? Write a paragraph or two describing or why not
 
 Based off the charts above we can confidently say the AI is better than random chance. This is because it wins more and because it wins faster. I suspect it wins faster because the utility function incentvizes getting stones in the mancala. Doing so leads to less stones being on the board and thus shorter games. 
 
-- Does your AI player have a better win rate as the number of plies increases? Why or why not?
+### Does your AI player have a better win rate as the number of plies increases? Why or why not?
 
 Yes, my AI player has a better win rate as the number of plies increases. This makes sense because number of plies is the depth of the game tree you are searching. Intuitively, if I can see two moves ahead, I can make better decisions than if I can only see 1 move ahead. 
 
-## Build an AI player that uses Alpha-Beta to choose the best move
 ## Play 100 games with the random player against the Alpha-Beta AI player at a depth of 5 plies.
 
 ### How long does it take for a single game to run to completion?
@@ -53,13 +52,13 @@ At a depth of 5 each game takes 0.066 seconds against a random player at a depth
 
 At a depth of 5 the win rate against a random player is 96.1%.
 
-- On average, how many moves does it take to win?
+### On average, how many moves does it take to win?
 
 ![alphabeta turn chart](./report_graphs/alphabeta_turns_vs_depth.png)
 
 On average at a depth of 5 plies alphabeta vs random take 26.8 moves. 
 
-- Are your results for this part different from those for your minimax AI player?
+### Are your results for this part different from those for your minimax AI player?
 
 ![alphabeta + minimax timing chart](./report_graphs/alphabeta-winrate_timing_comparison.png)
 
